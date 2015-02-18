@@ -145,7 +145,6 @@ class MainTest extends TestCase
     public function testShowDefaultLanguage()
     {
         $request = new Request();
-        $request->setScriptUrl('/');
         $_SERVER['SERVER_NAME'] = 'servername';
 
         // pretty URL without rules
@@ -174,6 +173,26 @@ class MainTest extends TestCase
         $request->pathInfo = '';
         $result = $manager->parseRequest($request);
         $this->assertEquals(['/en', []], $result);
+    }
+
+    public function testLanguageParsing()
+    {
+        $request = new Request();
+
+        // pretty URL without rules
+        $manager = new UrlManager([
+            'cache' => null,
+            'showDefault' => true,
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
+            'defaultLanguage' => 'en',
+            'rules' => [
+                '' => 'site/index'
+            ],
+        ]);
+        // empty pathinfo
+        $request->pathInfo = '/en';
+        $result = $manager->parseRequest($request);
+        $this->assertEquals(['site/index', ['language' => 'en']], $result);
     }
 
     /** Yii2 tests url manager - updated */
