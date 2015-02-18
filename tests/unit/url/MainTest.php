@@ -195,6 +195,47 @@ class MainTest extends TestCase
         $this->assertEquals(['site/index', ['language' => 'en']], $result);
     }
 
+    public function testWrongLanguageParsing()
+    {
+        $this->setExpectedException('\yii\web\NotFoundHttpException', 'Selected language not supported.');
+
+        $request = new Request();
+
+        // pretty URL without rules
+        $manager = new UrlManager([
+            'cache' => null,
+            'showDefault' => true,
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
+            'defaultLanguage' => 'en',
+            'rules' => [
+                '' => 'site/index'
+            ],
+        ]);
+        // empty pathinfo
+        $request->pathInfo = '/it';
+        $manager->parseRequest($request);
+    }
+
+    public function testDefaultLanguageParsing()
+    {
+        $this->setExpectedException('\yii\web\NotFoundHttpException', 'You select default language. Remove it from URL.');
+
+        $request = new Request();
+
+        // pretty URL without rules
+        $manager = new UrlManager([
+            'cache' => null,
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
+            'defaultLanguage' => 'en',
+            'rules' => [
+                '' => 'site/index'
+            ],
+        ]);
+        // empty pathinfo
+        $request->pathInfo = '/en';
+        $manager->parseRequest($request);
+    }
+
     /** Yii2 tests url manager - updated */
     public function testCreateUrl()
     {

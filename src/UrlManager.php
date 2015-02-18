@@ -278,7 +278,7 @@ class UrlManager extends \yii\web\UrlManager
 
         if (isset($request[1][$this->languageParam])) {
             if (!$this->setCurrent($request[1][$this->languageParam])) {
-                throw new NotFoundHttpException(\Yii::t('app', 'Selected language not supported'));
+                throw new NotFoundHttpException(\Yii::t('app', 'Selected language not supported.'));
             } elseif (!$this->showDefault && $this->isCurrentDefault()) {
                 throw new NotFoundHttpException(\Yii::t('app', 'You select default language. Remove it from URL.'));
             }
