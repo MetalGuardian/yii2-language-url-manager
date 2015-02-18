@@ -80,13 +80,4 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     {
         \Yii::$app = null;
     }
-
-    protected function setUp()
-    {
-        parent::setUp();
-
-        $config = static::loadConfig();
-
-        $this->mockApplication($config);
-    }
 }

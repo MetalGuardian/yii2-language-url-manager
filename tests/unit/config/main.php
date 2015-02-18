@@ -4,16 +4,11 @@ $config = [
     'id' => 'testapp',
     'basePath' => realpath(__DIR__ . '/..'),
     'components' => [
-        'urlManager' => [
-            'class' => '\common\components\url\UrlManager',
-            'showDefault' => false,
-            'enablePrettyUrl' => true,
-            'languages' => ['ru', 'ua' => 'uk'],
-            'showScriptName' => false,
-            'enableStrictParsing' => true,
-            'rules' => [
-                '' => 'site/index',
-            ],
+        'cache' => [
+            'class' => 'yii\caching\DummyCache',
+        ],
+        'realCache' => [
+            'class' => 'yii\caching\FileCache',
         ],
     ],
 ];
