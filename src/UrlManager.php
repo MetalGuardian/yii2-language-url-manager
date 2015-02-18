@@ -257,18 +257,17 @@ class UrlManager extends \yii\web\UrlManager
     {
         $pathInfo = trim($request->pathInfo, '/');
         if ($this->showDefault && empty($pathInfo)) {
-            $home = Yii::$app->getHomeUrl();
-            if (is_array($home)) {
-                $home[$this->languageParam] = $this->defaultLanguage;
-                $home = ArrayHelper::merge($home, $request->get());
+            $before = null;
+            if ($this->showScriptName) {
+                $before = $this->getScriptUrl() . '/';
             } else {
-                $home = ltrim($home, $request->getBaseUrl());
-                $home = '/' . $this->defaultLanguage . '/' . $home;
-                $home = (array)$home;
-                $home[$this->languageParam] = false;
+                $before = $this->getBaseUrl() . '/';
             }
-            Yii::$app->response->redirect($home);
-            Yii::$app->end();
+
+            $url = $before . $this->defaultLanguage;
+
+            Yii::$app->response->redirect($url);
+            return [$url, []];
         }
 
         $request = parent::parseRequest($request);

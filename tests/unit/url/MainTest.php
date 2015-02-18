@@ -142,8 +142,41 @@ class MainTest extends TestCase
         $this->assertEquals('/gii/model', $url);
     }
 
-    /** Yii2 tests url manager - updated */
+    public function testShowDefaultLanguage()
+    {
+        $request = new Request();
+        $request->setScriptUrl('/');
+        $_SERVER['SERVER_NAME'] = 'servername';
 
+        // pretty URL without rules
+        $manager = new UrlManager([
+            'cache' => null,
+            'baseUrl' => '/test/',
+            'showScriptName' => true,
+            'scriptUrl' => '/test/index.php',
+            'showDefault' => true,
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
+            'defaultLanguage' => 'en',
+        ]);
+        // empty pathinfo
+        $request->pathInfo = '';
+        $result = $manager->parseRequest($request);
+        $this->assertEquals(['/test/index.php/en', []], $result);
+
+        // pretty URL without rules
+        $manager = new UrlManager([
+            'cache' => null,
+            'showScriptName' => false,
+            'showDefault' => true,
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
+        ]);
+        // empty pathinfo
+        $request->pathInfo = '';
+        $result = $manager->parseRequest($request);
+        $this->assertEquals(['/en', []], $result);
+    }
+
+    /** Yii2 tests url manager - updated */
     public function testCreateUrl()
     {
         // default setting with '/' as base url
