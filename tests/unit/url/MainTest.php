@@ -8,6 +8,7 @@ namespace unit\url;
 
 use metalguardian\language\UrlManager;
 use unit\TestCase;
+use yii\web\Request;
 
 /**
  * Class MainTest
@@ -291,26 +292,13 @@ class MainTest extends TestCase
         $this->assertEquals('http://www.example.com/post/view?id=1&title=sample+post', $url);
     }
 
-    public function _testParseRequest()
+    public function testParseRequest()
     {
-        $manager = new UrlManager(['cache' => null]);
-        $request = new Request;
-        // default setting without 'r' param
-        unset($_GET['r']);
-        $result = $manager->parseRequest($request);
-        $this->assertEquals(['', []], $result);
-        // default setting with 'r' param
-        $_GET['r'] = 'site/index';
-        $result = $manager->parseRequest($request);
-        $this->assertEquals(['site/index', []], $result);
-        // default setting with 'r' param as an array
-        $_GET['r'] = ['site/index'];
-        $result = $manager->parseRequest($request);
-        $this->assertEquals(['', []], $result);
+        $request = new Request();
         // pretty URL without rules
         $manager = new UrlManager([
-            'enablePrettyUrl' => true,
             'cache' => null,
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
         ]);
         // empty pathinfo
         $request->pathInfo = '';
@@ -330,7 +318,6 @@ class MainTest extends TestCase
         $this->assertEquals(['module/site/index/', []], $result);
         // pretty URL rules
         $manager = new UrlManager([
-            'enablePrettyUrl' => true,
             'cache' => null,
             'rules' => [
                 [
@@ -338,6 +325,7 @@ class MainTest extends TestCase
                     'route' => 'post/view',
                 ],
             ],
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
         ]);
         // matching pathinfo
         $request->pathInfo = 'post/123/this+is+sample';
@@ -361,7 +349,6 @@ class MainTest extends TestCase
         $this->assertEquals(['module/site/index', []], $result);
         // pretty URL rules
         $manager = new UrlManager([
-            'enablePrettyUrl' => true,
             'suffix' => '.html',
             'cache' => null,
             'rules' => [
@@ -370,6 +357,7 @@ class MainTest extends TestCase
                     'route' => 'post/view',
                 ],
             ],
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
         ]);
         // matching pathinfo
         $request->pathInfo = 'post/123/this+is+sample.html';
@@ -393,7 +381,6 @@ class MainTest extends TestCase
         $this->assertFalse($result);
         // strict parsing
         $manager = new UrlManager([
-            'enablePrettyUrl' => true,
             'enableStrictParsing' => true,
             'suffix' => '.html',
             'cache' => null,
@@ -403,6 +390,7 @@ class MainTest extends TestCase
                     'route' => 'post/view',
                 ],
             ],
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
         ]);
         // matching pathinfo
         $request->pathInfo = 'post/123/this+is+sample.html';
@@ -414,12 +402,11 @@ class MainTest extends TestCase
         $this->assertFalse($result);
     }
 
-    public function _testParseRESTRequest()
+    public function testParseRESTRequest()
     {
-        $request = new Request;
+        $request = new Request();
         // pretty URL rules
         $manager = new UrlManager([
-            'enablePrettyUrl' => true,
             'showScriptName' => false,
             'cache' => null,
             'rules' => [
@@ -428,6 +415,7 @@ class MainTest extends TestCase
                 'post/<id>/<title>' => 'post/view',
                 'POST/GET' => 'post/get',
             ],
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
         ]);
         // matching pathinfo GET request
         $_SERVER['REQUEST_METHOD'] = 'GET';
