@@ -7,12 +7,13 @@
 namespace unit\url;
 
 use metalguardian\language\UrlManager;
+use unit\TestCase;
 
 /**
  * Class MainTest
  * @package rmrevin\yii\fontawesome\tests\unit\fontawesome
  */
-class MainTest extends \unit\TestCase
+class MainTest extends TestCase
 {
     protected function setUp()
     {
@@ -24,13 +25,13 @@ class MainTest extends \unit\TestCase
     public function testLanguagesNotSet()
     {
         $this->setExpectedException('\yii\base\InvalidConfigException', 'UrlManager::languages have to contains at least 1 item.');
-        $urlManager = new UrlManager();
+        new UrlManager();
     }
 
     public function testLanguagesEmpty()
     {
         $this->setExpectedException('\yii\base\InvalidConfigException', 'UrlManager::languages have to contains at least 1 item.');
-        $urlManager = new UrlManager([
+        new UrlManager([
             'languages' => [],
         ]);
     }
@@ -38,7 +39,7 @@ class MainTest extends \unit\TestCase
     public function testLanguagesDoNotContainDefaultLanguage()
     {
         $this->setExpectedException('\yii\base\InvalidConfigException', 'UrlManager::defaultLanguage have to be exist in UrlManager::languages.');
-        $urlManager = new UrlManager([
+        new UrlManager([
             'languages' => ['ru'],
         ]);
     }
@@ -46,7 +47,7 @@ class MainTest extends \unit\TestCase
     public function testEnablePrettyUrlSetTrue()
     {
         $this->setExpectedException('\yii\base\InvalidConfigException', 'UrlManager::enablePrettyUrl need to be true for using language url manager.');
-        $urlManager = new UrlManager([
+        new UrlManager([
             'languages' => ['ua' => 'uk', 'en', 'ru'],
             'enablePrettyUrl' => false,
         ]);
@@ -54,7 +55,7 @@ class MainTest extends \unit\TestCase
 
     public function testLanguageClosure()
     {
-        $urlManager = new UrlManager([
+        new UrlManager([
             'languages' => function () {
                 return ['en', 'ua' => 'uk'];
             },
@@ -64,7 +65,7 @@ class MainTest extends \unit\TestCase
 
     public function testDefaultLanguageClosure()
     {
-        $urlManager = new UrlManager([
+        new UrlManager([
             'languages' => ['ua' => 'uk', 'en', 'ru'],
             'defaultLanguage' => function () {
                 return 'en';
@@ -75,7 +76,7 @@ class MainTest extends \unit\TestCase
     public function testGetFromCache()
     {
         // default setting with '/' as base url
-        $manager = new UrlManager([
+        new UrlManager([
             'baseUrl' => '/',
             'scriptUrl' => '',
             'cache' => 'realCache',
@@ -124,8 +125,6 @@ class MainTest extends \unit\TestCase
         ]);
         $url = $manager->createUrl(['post/view', 'id' => 1, 'title' => 'sample post']);
         $this->assertEquals('/test/index.php/post/view?id=1&title=sample+post', $url);
-
-        // todo: test showScriptName
 
         // pretty URL with rules
         $manager = new UrlManager([
