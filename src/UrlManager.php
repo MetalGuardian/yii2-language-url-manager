@@ -89,7 +89,9 @@ class UrlManager extends \yii\web\UrlManager
     public function init()
     {
         if (!$this->enablePrettyUrl) {
-            throw new InvalidConfigException('UrlManager::enablePrettyUrl need to be true for using language url manager.');
+            throw new InvalidConfigException(
+                'UrlManager::enablePrettyUrl need to be true for using language url manager.'
+            );
         }
 
         if ($this->languages instanceof \Closure) {
@@ -170,8 +172,9 @@ class UrlManager extends \yii\web\UrlManager
                 $rule['pattern'] = $key;
             }
             if (is_array($rule)) {
-                if (isset($rule['pattern']) && !preg_match("/<{$this->languageParam}:?([^>]+)?>/",
-                        $rule['pattern']) && strpos($rule['pattern'], '://') === false
+                if (isset($rule['pattern']) &&
+                    !preg_match("/<{$this->languageParam}:?([^>]+)?>/", $rule['pattern']) &&
+                    strpos($rule['pattern'], '://') === false
                 ) {
                     $rule['pattern'] = "<{$this->languageParam}>/" . $rule['pattern'];
                 }

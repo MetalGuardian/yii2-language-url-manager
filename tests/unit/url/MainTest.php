@@ -47,7 +47,7 @@ class MainTest extends \unit\TestCase
     {
         $this->setExpectedException('\yii\base\InvalidConfigException', 'UrlManager::enablePrettyUrl need to be true for using language url manager.');
         $urlManager = new UrlManager([
-            'languages' => ['en'],
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
             'enablePrettyUrl' => false,
         ]);
     }
@@ -65,11 +65,30 @@ class MainTest extends \unit\TestCase
     public function testDefaultLanguageClosure()
     {
         $urlManager = new UrlManager([
-            'languages' => ['en'],
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
             'defaultLanguage' => function () {
                 return 'en';
             },
         ]);
+    }
+
+    public function testGetFromCache()
+    {
+        // default setting with '/' as base url
+        $manager = new UrlManager([
+            'baseUrl' => '/',
+            'scriptUrl' => '',
+            'cache' => 'realCache',
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
+        ]);
+        $manager = new UrlManager([
+            'baseUrl' => '/',
+            'scriptUrl' => '',
+            'cache' => 'realCache',
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
+        ]);
+        $url = $manager->createUrl(['post/view', 'id' => 1, 'title' => 'sample post']);
+        $this->assertEquals('/post/view?id=1&title=sample+post', $url);
     }
 
     /** Yii2 tests url manager - updated */
@@ -80,8 +99,8 @@ class MainTest extends \unit\TestCase
         $manager = new UrlManager([
             'baseUrl' => '/',
             'scriptUrl' => '',
-            'cache' => 'cache',
-            'languages' => ['en'],
+            'cache' => null,
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
         ]);
         $url = $manager->createUrl(['post/view', 'id' => 1, 'title' => 'sample post']);
         $this->assertEquals('/post/view?id=1&title=sample+post', $url);
@@ -90,8 +109,8 @@ class MainTest extends \unit\TestCase
             'enablePrettyUrl' => true,
             'baseUrl' => '/test/',
             'scriptUrl' => '/test',
-            'cache' => 'realCache',
-            'languages' => ['en'],
+            'cache' => null,
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
         ]);
         $url = $manager->createUrl(['post/view', 'id' => 1, 'title' => 'sample post']);
         $this->assertEquals('/test/post/view?id=1&title=sample+post', $url);
@@ -101,7 +120,7 @@ class MainTest extends \unit\TestCase
             'baseUrl' => '/test',
             'scriptUrl' => '/test/index.php',
             'cache' => null,
-            'languages' => ['en'],
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
         ]);
         $url = $manager->createUrl(['post/view', 'id' => 1, 'title' => 'sample post']);
         $this->assertEquals('/test/index.php/post/view?id=1&title=sample+post', $url);
@@ -120,7 +139,7 @@ class MainTest extends \unit\TestCase
             ],
             'baseUrl' => '/',
             'scriptUrl' => '',
-            'languages' => ['en'],
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
         ]);
         $url = $manager->createUrl(['post/view', 'id' => 1, 'title' => 'sample post']);
         $this->assertEquals('/post/1/sample+post', $url);
@@ -143,7 +162,7 @@ class MainTest extends \unit\TestCase
             'baseUrl' => '/',
             'scriptUrl' => '',
             'suffix' => '.html',
-            'languages' => ['en'],
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
         ]);
         $url = $manager->createUrl(['post/view', 'id' => 1, 'title' => 'sample post']);
         $this->assertEquals('/post/1/sample+post.html', $url);
@@ -163,7 +182,7 @@ class MainTest extends \unit\TestCase
             ],
             'baseUrl' => '/test',
             'scriptUrl' => '/test',
-            'languages' => ['en'],
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
         ]);
         $url = $manager->createUrl(['post/view', 'id' => 1, 'title' => 'sample post', 'lang' => 'en']);
         $this->assertEquals('http://en.example.com/test/post/1/sample+post', $url);
@@ -173,7 +192,7 @@ class MainTest extends \unit\TestCase
     /**
      * https://github.com/yiisoft/yii2/issues/6717
      */
-    public function _testCreateUrlWithEmptyPattern()
+    public function testCreateUrlWithEmptyPattern()
     {
         $manager = new UrlManager([
             'enablePrettyUrl' => true,
@@ -183,6 +202,7 @@ class MainTest extends \unit\TestCase
             ],
             'baseUrl' => '/',
             'scriptUrl' => '',
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
         ]);
         $url = $manager->createUrl(['front/site/index']);
         $this->assertEquals('/', $url);
@@ -200,6 +220,7 @@ class MainTest extends \unit\TestCase
             ],
             'baseUrl' => '/',
             'scriptUrl' => '',
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
         ]);
         $url = $manager->createUrl(['front/site/index']);
         $this->assertEquals('/', $url);
@@ -211,21 +232,22 @@ class MainTest extends \unit\TestCase
         $this->assertEquals('/?page=1', $url);
     }
 
-    public function _testCreateAbsoluteUrl()
+    public function testCreateAbsoluteUrl()
     {
         $manager = new UrlManager([
             'baseUrl' => '/',
             'scriptUrl' => '',
             'hostInfo' => 'http://www.example.com',
             'cache' => null,
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
         ]);
         $url = $manager->createAbsoluteUrl(['post/view', 'id' => 1, 'title' => 'sample post']);
-        $this->assertEquals('http://www.example.com?r=post%2Fview&id=1&title=sample+post', $url);
+        $this->assertEquals('http://www.example.com/post/view?id=1&title=sample+post', $url);
         $url = $manager->createAbsoluteUrl(['post/view', 'id' => 1, 'title' => 'sample post'], 'https');
-        $this->assertEquals('https://www.example.com?r=post%2Fview&id=1&title=sample+post', $url);
+        $this->assertEquals('https://www.example.com/post/view?id=1&title=sample+post', $url);
         $manager->hostInfo = 'https://www.example.com';
         $url = $manager->createAbsoluteUrl(['post/view', 'id' => 1, 'title' => 'sample post'], 'http');
-        $this->assertEquals('http://www.example.com?r=post%2Fview&id=1&title=sample+post', $url);
+        $this->assertEquals('http://www.example.com/post/view?id=1&title=sample+post', $url);
     }
 
     public function _testParseRequest()
