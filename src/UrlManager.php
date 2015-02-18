@@ -191,7 +191,8 @@ class UrlManager extends \yii\web\UrlManager
             if (is_array($rule)) {
                 if (isset($rule['pattern']) &&
                     !preg_match("/<{$this->languageParam}:?([^>]+)?>/", $rule['pattern']) &&
-                    strpos($rule['pattern'], '://') === false
+                    strpos($rule['pattern'], '://') === false &&
+                    !(isset($rule['host']) && preg_match("/<{$this->languageParam}:?([^>]+)?>/", $rule['host']))
                 ) {
                     $rule['pattern'] = "<{$this->languageParam}>/" . $rule['pattern'];
                 }
