@@ -42,9 +42,13 @@ class UrlManager extends \yii\web\UrlManager
      * or
      * ['en' => 'en_US', 'ru', 'ua' => 'uk']
      * 'code_in_url' => 'locale'
+     * or
+     * function () {
+     *    return ['en', 'ua'];
+     * }
      * ```
      *
-     * @var array
+     * @var array|\Closure
      */
     public $languages = [];
 
@@ -81,6 +85,11 @@ class UrlManager extends \yii\web\UrlManager
      */
     public $autoLanguageRules = true;
 
+    /**
+     * Current language (code)
+     *
+     * @var
+     */
     protected $current;
 
     /**
@@ -125,26 +134,34 @@ class UrlManager extends \yii\web\UrlManager
         parent::init();
 
         if ($this->autoLanguageRules) {
-            if (is_string($this->cache)) {
-                $this->cache = \Yii::$app->get($this->cache, false);
-            }
-            if ($this->cache instanceof Cache) {
-                $cacheKey = __CLASS__; // this class
-                $hash = md5(json_encode($this->languageRules));
-                if (($data = $this->cache->get($cacheKey)) !== false && isset($data[1]) && $data[1] === $hash) {
-                    $this->languageRules = $data[0];
-                } else {
-                    $this->languageRules = $this->buildLanguageRules($this->languageRules);
-                    $this->cache->set($cacheKey, [$this->languageRules, $hash]);
-                }
+            $this->setUpLanguageUrls();
+        }
+    }
+
+    /**
+     * @throws InvalidConfigException
+     */
+    public function setUpLanguageUrls()
+    {
+        if (is_string($this->cache)) {
+            $this->cache = \Yii::$app->get($this->cache, false);
+        }
+        if ($this->cache instanceof Cache) {
+            $cacheKey = __CLASS__; // this class
+            $hash = md5(json_encode($this->languageRules));
+            if (($data = $this->cache->get($cacheKey)) !== false && isset($data[1]) && $data[1] === $hash) {
+                $this->languageRules = $data[0];
             } else {
                 $this->languageRules = $this->buildLanguageRules($this->languageRules);
+                $this->cache->set($cacheKey, [$this->languageRules, $hash]);
             }
-            if ($this->showDefault) {
-                $this->rules = $this->languageRules;
-            } else {
-                $this->rules = ArrayHelper::merge($this->languageRules, $this->rules);
-            }
+        } else {
+            $this->languageRules = $this->buildLanguageRules($this->languageRules);
+        }
+        if ($this->showDefault) {
+            $this->rules = $this->languageRules;
+        } else {
+            $this->rules = ArrayHelper::merge($this->languageRules, $this->rules);
         }
     }
 

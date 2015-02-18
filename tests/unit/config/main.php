@@ -4,9 +4,6 @@ $config = [
     'id' => 'testapp',
     'basePath' => realpath(__DIR__ . '/..'),
     'components' => [
-        'cache' => [
-            'class' => 'yii\caching\DummyCache',
-        ],
         'realCache' => [
             'class' => 'yii\caching\FileCache',
         ],

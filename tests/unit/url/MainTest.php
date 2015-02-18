@@ -21,6 +21,7 @@ class MainTest extends TestCase
         parent::setUp();
         $config = $this->loadConfig();
         $this->mockWebApplication($config);
+        \Yii::$app->get('realCache')->flush();
     }
 
     public function testLanguagesNotSet()
@@ -76,42 +77,49 @@ class MainTest extends TestCase
 
     public function testGetFromCache()
     {
-        // default setting with '/' as base url
         new UrlManager([
-            'baseUrl' => '/',
-            'scriptUrl' => '',
+            'showScriptName' => false,
             'cache' => 'realCache',
+            'showDefault' => true,
             'languages' => ['ua' => 'uk', 'en', 'ru'],
+            'rules' => [
+                'post/view' => 'post/view',
+            ],
         ]);
         $manager = new UrlManager([
-            'baseUrl' => '/',
-            'scriptUrl' => '',
+            'showScriptName' => false,
             'cache' => 'realCache',
+            'showDefault' => true,
             'languages' => ['ua' => 'uk', 'en', 'ru'],
+            'rules' => [
+                'post/view' => 'post/view',
+            ],
         ]);
         $url = $manager->createUrl(['post/view', 'id' => 1, 'title' => 'sample post']);
-        $this->assertEquals('/post/view?id=1&title=sample+post', $url);
+        $this->assertEquals('/en/post/view?id=1&title=sample+post', $url);
     }
 
     public function testCreateUrlWithVerbs()
     {
-        // pretty URL with rules
         $manager = new UrlManager([
             'cache' => null,
             'rules' => [
                     'POST post/<id>/<title>' => 'post/view',
+                    'DELETE post/<id>/<title>' => 'post/view',
+                    'PUT,PATCH post/<id>/<title>' => 'post/view',
+                    'GET,HEAD,OPTIONS blog/<id>/<title>' => 'blog/view',
             ],
-            'baseUrl' => '/',
-            'scriptUrl' => '',
+            'showScriptName' => false,
             'languages' => ['ua' => 'uk', 'en', 'ru'],
         ]);
         $url = $manager->createUrl(['post/view', 'id' => 1, 'title' => 'sample post']);
         $this->assertEquals('/post/view?id=1&title=sample+post', $url);
         $url = $manager->createUrl(['post/index', 'page' => 1]);
         $this->assertEquals('/post/index?page=1', $url);
-        // rules with defaultAction
         $url = $manager->createUrl(['/post', 'page' => 1]);
         $this->assertEquals('/post?page=1', $url);
+        $url = $manager->createUrl(['blog/view', 'id' => 1, 'title' => 'sample post']);
+        $this->assertEquals('/blog/1/sample+post', $url);
     }
 
     public function testCreateUrlWrongClass()
@@ -124,8 +132,6 @@ class MainTest extends TestCase
                     'class' => '\yii\web\Request',
                 ],
             ],
-            'baseUrl' => '/',
-            'scriptUrl' => '',
             'languages' => ['ua' => 'uk', 'en', 'ru'],
         ]);
     }
@@ -134,12 +140,19 @@ class MainTest extends TestCase
     {
         $manager = new UrlManager([
             'cache' => null,
-            'baseUrl' => '/',
-            'scriptUrl' => '',
+            'showDefault' => true,
+            'showScriptName' => false,
             'languages' => ['ua' => 'uk', 'en', 'ru'],
+            'rules' => [
+                '' => 'site/index',
+            ],
         ]);
         $url = $manager->createUrl(['gii/model']);
         $this->assertEquals('/gii/model', $url);
+        $url = $manager->createUrl(['debug/index']);
+        $this->assertEquals('/debug/index', $url);
+        $url = $manager->createUrl(['/site/index']);
+        $this->assertEquals('/en', $url);
     }
 
     public function testShowDefaultLanguage()
@@ -147,7 +160,6 @@ class MainTest extends TestCase
         $request = new Request();
         $_SERVER['SERVER_NAME'] = 'servername';
 
-        // pretty URL without rules
         $manager = new UrlManager([
             'cache' => null,
             'baseUrl' => '/test/',
@@ -157,19 +169,16 @@ class MainTest extends TestCase
             'languages' => ['ua' => 'uk', 'en', 'ru'],
             'defaultLanguage' => 'en',
         ]);
-        // empty pathinfo
         $request->pathInfo = '';
         $result = $manager->parseRequest($request);
         $this->assertEquals(['/test/index.php/en', []], $result);
 
-        // pretty URL without rules
         $manager = new UrlManager([
             'cache' => null,
             'showScriptName' => false,
             'showDefault' => true,
             'languages' => ['ua' => 'uk', 'en', 'ru'],
         ]);
-        // empty pathinfo
         $request->pathInfo = '';
         $result = $manager->parseRequest($request);
         $this->assertEquals(['/en', []], $result);
@@ -179,7 +188,6 @@ class MainTest extends TestCase
     {
         $request = new Request();
 
-        // pretty URL without rules
         $manager = new UrlManager([
             'cache' => null,
             'showDefault' => true,
@@ -189,10 +197,17 @@ class MainTest extends TestCase
                 '' => 'site/index'
             ],
         ]);
-        // empty pathinfo
         $request->pathInfo = '/en';
         $result = $manager->parseRequest($request);
         $this->assertEquals(['site/index', ['language' => 'en']], $result);
+        $this->assertEquals('en', $manager->getCurrent());
+        $this->assertEquals('en', $manager->getCurrentLocale());
+
+        $request->pathInfo = '/ua';
+        $result = $manager->parseRequest($request);
+        $this->assertEquals(['site/index', ['language' => 'ua']], $result);
+        $this->assertEquals('ua', $manager->getCurrent());
+        $this->assertEquals('uk', $manager->getCurrentLocale());
     }
 
     public function testWrongLanguageParsing()
@@ -201,7 +216,6 @@ class MainTest extends TestCase
 
         $request = new Request();
 
-        // pretty URL without rules
         $manager = new UrlManager([
             'cache' => null,
             'showDefault' => true,
@@ -211,7 +225,6 @@ class MainTest extends TestCase
                 '' => 'site/index'
             ],
         ]);
-        // empty pathinfo
         $request->pathInfo = '/it';
         $manager->parseRequest($request);
     }
@@ -222,7 +235,6 @@ class MainTest extends TestCase
 
         $request = new Request();
 
-        // pretty URL without rules
         $manager = new UrlManager([
             'cache' => null,
             'languages' => ['ua' => 'uk', 'en', 'ru'],
@@ -231,7 +243,6 @@ class MainTest extends TestCase
                 '' => 'site/index'
             ],
         ]);
-        // empty pathinfo
         $request->pathInfo = '/en';
         $manager->parseRequest($request);
     }
