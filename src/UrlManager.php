@@ -180,9 +180,6 @@ class UrlManager extends \yii\web\UrlManager
                 }
                 $rule = Yii::createObject(array_merge($this->ruleConfig, $rule));
             }
-            if (!$rule instanceof UrlRuleInterface) {
-                throw new InvalidConfigException('URL rule class must implement UrlRuleInterface.');
-            }
             $compiledRules[] = $rule;
         }
 

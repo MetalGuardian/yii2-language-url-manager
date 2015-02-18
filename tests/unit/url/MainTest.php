@@ -92,6 +92,55 @@ class MainTest extends TestCase
         $this->assertEquals('/post/view?id=1&title=sample+post', $url);
     }
 
+    public function testCreateUrlWithVerbs()
+    {
+        // pretty URL with rules
+        $manager = new UrlManager([
+            'cache' => null,
+            'rules' => [
+                    'POST post/<id>/<title>' => 'post/view',
+            ],
+            'baseUrl' => '/',
+            'scriptUrl' => '',
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
+        ]);
+        $url = $manager->createUrl(['post/view', 'id' => 1, 'title' => 'sample post']);
+        $this->assertEquals('/post/view?id=1&title=sample+post', $url);
+        $url = $manager->createUrl(['post/index', 'page' => 1]);
+        $this->assertEquals('/post/index?page=1', $url);
+        // rules with defaultAction
+        $url = $manager->createUrl(['/post', 'page' => 1]);
+        $this->assertEquals('/post?page=1', $url);
+    }
+
+    public function testCreateUrlWrongClass()
+    {
+        $this->setExpectedException('\yii\base\InvalidConfigException', 'URL rule class must implement UrlRuleInterface.');
+        new UrlManager([
+            'cache' => null,
+            'rules' => [
+                [
+                    'class' => '\yii\web\Request',
+                ],
+            ],
+            'baseUrl' => '/',
+            'scriptUrl' => '',
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
+        ]);
+    }
+
+    public function testCreateUrlExcluded()
+    {
+        $manager = new UrlManager([
+            'cache' => null,
+            'baseUrl' => '/',
+            'scriptUrl' => '',
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
+        ]);
+        $url = $manager->createUrl(['gii/model']);
+        $this->assertEquals('/gii/model', $url);
+    }
+
     /** Yii2 tests url manager - updated */
 
     public function testCreateUrl()
@@ -107,7 +156,6 @@ class MainTest extends TestCase
         $this->assertEquals('/post/view?id=1&title=sample+post', $url);
 
         $manager = new UrlManager([
-            'enablePrettyUrl' => true,
             'baseUrl' => '/test/',
             'scriptUrl' => '/test',
             'cache' => null,
@@ -117,7 +165,6 @@ class MainTest extends TestCase
         $this->assertEquals('/test/post/view?id=1&title=sample+post', $url);
 
         $manager = new UrlManager([
-            'enablePrettyUrl' => true,
             'baseUrl' => '/test',
             'scriptUrl' => '/test/index.php',
             'cache' => null,
@@ -128,7 +175,6 @@ class MainTest extends TestCase
 
         // pretty URL with rules
         $manager = new UrlManager([
-            'enablePrettyUrl' => true,
             'cache' => null,
             'rules' => [
                 [
@@ -150,7 +196,6 @@ class MainTest extends TestCase
 
         // pretty URL with rules and suffix
         $manager = new UrlManager([
-            'enablePrettyUrl' => true,
             'cache' => null,
             'rules' => [
                 [
@@ -170,7 +215,6 @@ class MainTest extends TestCase
 
         // pretty URL with rules that have host info
         $manager = new UrlManager([
-            'enablePrettyUrl' => true,
             'cache' => null,
             'rules' => [
                 [
@@ -194,7 +238,6 @@ class MainTest extends TestCase
     public function testCreateUrlWithEmptyPattern()
     {
         $manager = new UrlManager([
-            'enablePrettyUrl' => true,
             'cache' => null,
             'rules' => [
                 '' => 'front/site/index',
@@ -212,7 +255,6 @@ class MainTest extends TestCase
         $url = $manager->createUrl(['/front/site/index', 'page' => 1]);
         $this->assertEquals('/?page=1', $url);
         $manager = new UrlManager([
-            'enablePrettyUrl' => true,
             'cache' => null,
             'rules' => [
                 '' => '/front/site/index',
