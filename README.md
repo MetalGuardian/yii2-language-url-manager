@@ -2,6 +2,18 @@ Yii2 language url manager
 ==========================
 Extension manage urls with language in it
 
+[![Latest Stable Version](https://poser.pugx.org/metalguardian/yii2-language-url-manager/v/stable.svg)](https://packagist.org/packages/metalguardian/yii2-language-url-manager) 
+[![Total Downloads](https://poser.pugx.org/metalguardian/yii2-language-url-manager/downloads.svg)](https://packagist.org/packages/metalguardian/yii2-language-url-manager) 
+[![Latest Unstable Version](https://poser.pugx.org/metalguardian/yii2-language-url-manager/v/unstable.svg)](https://packagist.org/packages/metalguardian/yii2-language-url-manager) 
+[![License](https://poser.pugx.org/metalguardian/yii2-language-url-manager/license.svg)](https://packagist.org/packages/metalguardian/yii2-language-url-manager)
+
+Code Status
+-----------
+
+
+[![Build Status](https://travis-ci.org/MetalGuardian/yii2-language-url-manager.svg?branch=master)](https://travis-ci.org/MetalGuardian/yii2-language-url-manager)
+[![Dependency Status](https://www.versioneye.com/user/projects/54e517dad1ec573c9900060f/badge.svg?style=flat)](https://www.versioneye.com/user/projects/54e517dad1ec573c9900060f)
+
 Installation
 ------------
 
