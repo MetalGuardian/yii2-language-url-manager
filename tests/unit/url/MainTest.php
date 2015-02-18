@@ -350,6 +350,100 @@ class MainTest extends TestCase
         $this->assertEquals('/test/post/index?page=1&language=ru', $url);
     }
 
+    public function testParseLanguageRequest()
+    {
+        $request = new Request();
+        $_SERVER['SERVER_NAME'] = 'servername';
+        $manager = new UrlManager([
+            'cache' => null,
+            'rules' => [
+                [
+                    'pattern' => 'post/<id>/<title>',
+                    'route' => 'post/view',
+                ],
+                '<module>/<controller>/<action>' => '<module>/<controller>/<action>',
+                '<controller>/<action>' => '<controller>/<action>',
+            ],
+            'showDefault' => true,
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
+        ]);
+        // matching pathinfo
+        $request->pathInfo = 'en/post/123/this+is+sample';
+        $result = $manager->parseRequest($request);
+        $this->assertEquals(['post/view', ['id' => '123', 'title' => 'this+is+sample', 'language' => 'en']], $result);
+        // trailing slash is significant
+        $request->pathInfo = 'en/post/123/this+is+sample/';
+        $result = $manager->parseRequest($request);
+        $this->assertEquals(['en/post/123/this+is+sample/', []], $result);
+        // empty pathinfo
+        $request->pathInfo = '';
+        $result = $manager->parseRequest($request);
+        $this->assertEquals(['/index.php/en', []], $result);
+        // normal pathinfo
+        $request->pathInfo = 'en/site/index';
+        $result = $manager->parseRequest($request);
+        $this->assertEquals(['site/index', ['language' => 'en']], $result);
+        // pathinfo with module
+        $request->pathInfo = 'en/module/site/index';
+        $result = $manager->parseRequest($request);
+        $this->assertEquals(['module/site/index', ['language' => 'en']], $result);
+        // pretty URL rules
+        $manager = new UrlManager([
+            'suffix' => '.html',
+            'cache' => null,
+            'rules' => [
+                [
+                    'pattern' => 'post/<id>/<title>',
+                    'route' => 'post/view',
+                ],
+            ],
+            'showDefault' => true,
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
+        ]);
+        // matching pathinfo
+        $request->pathInfo = '/en/post/123/this+is+sample.html';
+        $result = $manager->parseRequest($request);
+        $this->assertEquals(['post/view', ['id' => '123', 'title' => 'this+is+sample', 'language' => 'en']], $result);
+        // matching pathinfo without suffix
+        $request->pathInfo = 'post/123/this+is+sample';
+        $result = $manager->parseRequest($request);
+        $this->assertFalse($result);
+        // empty pathinfo
+        $request->pathInfo = '/en';
+        $result = $manager->parseRequest($request);
+        $this->assertFalse($result);
+        // normal pathinfo
+        $request->pathInfo = 'site/index.html';
+        $result = $manager->parseRequest($request);
+        $this->assertEquals(['site/index', []], $result);
+        // pathinfo without suffix
+        $request->pathInfo = 'site/index';
+        $result = $manager->parseRequest($request);
+        $this->assertFalse($result);
+        // strict parsing
+        $manager = new UrlManager([
+            'enableStrictParsing' => true,
+            'suffix' => '.html',
+            'cache' => null,
+            'rules' => [
+                [
+                    'pattern' => 'post/<id>/<title>',
+                    'route' => 'post/view',
+                ],
+            ],
+            'showDefault' => true,
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
+        ]);
+        // matching pathinfo
+        $request->pathInfo = 'en/post/123/this+is+sample.html';
+        $result = $manager->parseRequest($request);
+        $this->assertEquals(['post/view', ['id' => '123', 'title' => 'this+is+sample', 'language' => 'en']], $result);
+        // unmatching pathinfo
+        $request->pathInfo = 'site/index.html';
+        $result = $manager->parseRequest($request);
+        $this->assertFalse($result);
+    }
+
     /** Yii2 tests url manager - updated */
     public function testCreateUrl()
     {
