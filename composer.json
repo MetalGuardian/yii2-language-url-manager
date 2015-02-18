@@ -1,6 +1,6 @@
 {
-    "name": "metalguardian/yii2-language-url-manager-component",
-    "description": "Extension to upload and store files",
+    "name": "metalguardian/yii2-language-url-manager",
+    "description": "Extension to manage languages in urls",
     "type": "yii2-extension",
     "keywords": ["yii2","extension","url","language"],
     "license": "MIT",
