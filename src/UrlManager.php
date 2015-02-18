@@ -12,7 +12,6 @@ use yii\caching\Cache;
 use yii\helpers\ArrayHelper;
 use yii\web\NotFoundHttpException;
 use yii\web\UrlRule;
-use yii\web\UrlRuleInterface;
 
 /**
  * Class UrlManager
@@ -131,6 +130,10 @@ class UrlManager extends \yii\web\UrlManager
 
         $this->languageRules = $this->rules;
 
+        if (empty($this->languageRules)) {
+            throw new InvalidConfigException('UrlManager::rules required to be specified.');
+        }
+
         parent::init();
 
         if ($this->autoLanguageRules) {
@@ -143,9 +146,6 @@ class UrlManager extends \yii\web\UrlManager
      */
     public function setUpLanguageUrls()
     {
-        if (is_string($this->cache)) {
-            $this->cache = \Yii::$app->get($this->cache, false);
-        }
         if ($this->cache instanceof Cache) {
             $cacheKey = __CLASS__; // this class
             $hash = md5(json_encode($this->languageRules));

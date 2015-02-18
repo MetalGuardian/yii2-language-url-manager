@@ -31,10 +31,20 @@ Once the extension is installed, simply use it in your config by  :
     'urlManager' => [
         'class' => '\metalguardian\language\UrlManager',
         'languages' => ['ua' => 'uk', 'en', 'ru'],
-        'rules' => [
+        ....
+        or 
+        'languages' => function () {
+            return \app\models\Language::find()->select(['code'])->column();
+        },
+        ....
+        'rules' => [ // rules are required
             '<module>/<controller>/<action>' => '<module>/<controller>/<action>',
             '<controller>/<action>' => '<controller>/<action>',
             '' => 'site/index',
         ],
     ],
 ```
+
+You need to specify rules (required). In other way generated links will not be correct.
+
+Strongly recommended to set `UrlManager::enableStrictParsing` in `true`

@@ -55,12 +55,21 @@ class MainTest extends TestCase
         ]);
     }
 
+    public function testRulesNotSpecified()
+    {
+        $this->setExpectedException('\yii\base\InvalidConfigException', 'UrlManager::rules required to be specified.');
+        new UrlManager([
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
+        ]);
+    }
+
     public function testLanguageClosure()
     {
         new UrlManager([
             'languages' => function () {
                 return ['en', 'ua' => 'uk'];
             },
+            'rules' => ['' => 'site/index'],
             'showDefault' => true,
         ]);
     }
@@ -69,6 +78,7 @@ class MainTest extends TestCase
     {
         new UrlManager([
             'languages' => ['ua' => 'uk', 'en', 'ru'],
+            'rules' => ['' => 'site/index'],
             'defaultLanguage' => function () {
                 return 'en';
             },
@@ -168,6 +178,7 @@ class MainTest extends TestCase
             'showDefault' => true,
             'languages' => ['ua' => 'uk', 'en', 'ru'],
             'defaultLanguage' => 'en',
+            'rules' => ['' => 'site/index'],
         ]);
         $request->pathInfo = '';
         $result = $manager->parseRequest($request);
@@ -178,6 +189,7 @@ class MainTest extends TestCase
             'showScriptName' => false,
             'showDefault' => true,
             'languages' => ['ua' => 'uk', 'en', 'ru'],
+            'rules' => ['' => 'site/index'],
         ]);
         $request->pathInfo = '';
         $result = $manager->parseRequest($request);
@@ -453,6 +465,7 @@ class MainTest extends TestCase
             'scriptUrl' => '',
             'cache' => null,
             'languages' => ['ua' => 'uk', 'en', 'ru'],
+            'rules' => ['' => 'site/index'],
         ]);
         $url = $manager->createUrl(['post/view', 'id' => 1, 'title' => 'sample post']);
         $this->assertEquals('/post/view?id=1&title=sample+post', $url);
@@ -462,6 +475,7 @@ class MainTest extends TestCase
             'scriptUrl' => '/test',
             'cache' => null,
             'languages' => ['ua' => 'uk', 'en', 'ru'],
+            'rules' => ['' => 'site/index'],
         ]);
         $url = $manager->createUrl(['post/view', 'id' => 1, 'title' => 'sample post']);
         $this->assertEquals('/test/post/view?id=1&title=sample+post', $url);
@@ -471,6 +485,7 @@ class MainTest extends TestCase
             'scriptUrl' => '/test/index.php',
             'cache' => null,
             'languages' => ['ua' => 'uk', 'en', 'ru'],
+            'rules' => ['' => 'site/index'],
         ]);
         $url = $manager->createUrl(['post/view', 'id' => 1, 'title' => 'sample post']);
         $this->assertEquals('/test/index.php/post/view?id=1&title=sample+post', $url);
@@ -583,6 +598,7 @@ class MainTest extends TestCase
             'hostInfo' => 'http://www.example.com',
             'cache' => null,
             'languages' => ['ua' => 'uk', 'en', 'ru'],
+            'rules' => ['' => 'site/index'],
         ]);
         $url = $manager->createAbsoluteUrl(['post/view', 'id' => 1, 'title' => 'sample post']);
         $this->assertEquals('http://www.example.com/post/view?id=1&title=sample+post', $url);
@@ -600,11 +616,12 @@ class MainTest extends TestCase
         $manager = new UrlManager([
             'cache' => null,
             'languages' => ['ua' => 'uk', 'en', 'ru'],
+            'rules' => ['' => 'site/index'],
         ]);
         // empty pathinfo
         $request->pathInfo = '';
         $result = $manager->parseRequest($request);
-        $this->assertEquals(['', []], $result);
+        $this->assertEquals(['site/index', []], $result);
         // normal pathinfo
         $request->pathInfo = 'site/index';
         $result = $manager->parseRequest($request);
