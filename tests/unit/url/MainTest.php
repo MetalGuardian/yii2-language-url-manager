@@ -63,6 +63,24 @@ class MainTest extends TestCase
         ]);
     }
 
+    public function testLanguagesNotArray()
+    {
+        $this->setExpectedException('\yii\base\InvalidConfigException', 'UrlManager::languages have to be array.');
+        new UrlManager([
+            'languages' => 'ru, ua, en',
+        ]);
+    }
+
+    public function testLanguagesNotArrayClosure()
+    {
+        $this->setExpectedException('\yii\base\InvalidConfigException', 'UrlManager::languages have to be array.');
+        new UrlManager([
+            'languages' => function () {
+                return 'ru, en, ua';
+            },
+        ]);
+    }
+
     public function testLanguageClosure()
     {
         new UrlManager([

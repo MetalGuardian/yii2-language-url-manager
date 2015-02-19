@@ -110,6 +110,10 @@ class UrlManager extends \yii\web\UrlManager
             $this->defaultLanguage = call_user_func($this->defaultLanguage);
         }
 
+        if (!is_array($this->languages)) {
+            throw new InvalidConfigException('UrlManager::languages have to be array.');
+        }
+
         if (empty($this->languages)) {
             throw new InvalidConfigException('UrlManager::languages have to contains at least 1 item.');
         }
@@ -275,7 +279,6 @@ class UrlManager extends \yii\web\UrlManager
     {
         $pathInfo = trim($request->pathInfo, '/');
         if ($this->showDefault && empty($pathInfo)) {
-            $before = null;
             if ($this->showScriptName) {
                 $before = $this->getScriptUrl() . '/';
             } else {
