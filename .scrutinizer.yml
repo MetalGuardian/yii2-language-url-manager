@@ -21,8 +21,7 @@ tools:
     php_pdepend: true
     php_analyzer: true
     php_changetracking: true
-    external_code_coverage:
-        timeout: 2100 # Timeout in seconds.
+    external_code_coverage: true
 filter:
     excluded_paths:
         - tests/*
