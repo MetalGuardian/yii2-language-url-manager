@@ -10,9 +10,10 @@ Extension manage urls with language in it
 Code Status
 -----------
 
-
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/MetalGuardian/yii2-language-url-manager/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/MetalGuardian/yii2-language-url-manager/?branch=master)
 [![Build Status](https://travis-ci.org/MetalGuardian/yii2-language-url-manager.svg?branch=master)](https://travis-ci.org/MetalGuardian/yii2-language-url-manager)
-[![Dependency Status](https://www.versioneye.com/user/projects/54e517dad1ec573c9900060f/badge.svg?style=flat)](https://www.versioneye.com/user/projects/54e517dad1ec573c9900060f)
+[![Code Coverage](https://scrutinizer-ci.com/g/MetalGuardian/yii2-language-url-manager/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/MetalGuardian/yii2-language-url-manager/?branch=master)
+[![Code Climate](https://codeclimate.com/github/MetalGuardian/yii2-language-url-manager/badges/gpa.svg)](https://codeclimate.com/github/MetalGuardian/yii2-language-url-manager)
 
 Installation
 ------------
