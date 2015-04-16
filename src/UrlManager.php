@@ -247,7 +247,7 @@ class UrlManager extends \yii\web\UrlManager
     public function parseRequest($request)
     {
         $url = $this->checkRedirectToLanguage($request);
-        if ($url) {
+        if ($url !== false) {
             Yii::$app->response->redirect($url);
             return [$url, []];
         }
@@ -295,7 +295,7 @@ class UrlManager extends \yii\web\UrlManager
     }
 
     /**
-     * @param $rule
+     * @param string $rule
      * @param $key
      *
      * @return array
@@ -343,7 +343,7 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * @param $request
      *
-     * @return array
+     * @return array|false
      */
     public function checkRedirectToLanguage($request)
     {
