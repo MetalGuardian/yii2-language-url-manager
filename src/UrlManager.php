@@ -92,6 +92,13 @@ class UrlManager extends \yii\web\UrlManager
     protected $current;
 
     /**
+     * Additional suffix for cache key, if you use component in different parts of application
+     *
+     * @var string
+     */
+    public $cacheKeySuffix;
+
+    /**
      * @inheritdoc
      */
     public function init()
@@ -102,13 +109,7 @@ class UrlManager extends \yii\web\UrlManager
             );
         }
 
-        if ($this->languages instanceof \Closure) {
-            $this->languages = call_user_func($this->languages);
-        }
-
-        if ($this->defaultLanguage instanceof \Closure) {
-            $this->defaultLanguage = call_user_func($this->defaultLanguage);
-        }
+        $this->fillLanguages();
 
         if (!is_array($this->languages)) {
             throw new InvalidConfigException('UrlManager::languages have to be array.');
@@ -118,15 +119,7 @@ class UrlManager extends \yii\web\UrlManager
             throw new InvalidConfigException('UrlManager::languages have to contains at least 1 item.');
         }
 
-        $languages = [];
-        foreach ($this->languages as $key => $value) {
-            if (is_string($key)) {
-                $languages[$key] = $value;
-            } else {
-                $languages[$value] = $value;
-            }
-        }
-        $this->languages = $languages;
+        $this->normalizeLanguages();
 
         if (!isset($this->languages[$this->defaultLanguage])) {
             throw new InvalidConfigException('UrlManager::defaultLanguage have to be exist in UrlManager::languages.');
@@ -151,8 +144,8 @@ class UrlManager extends \yii\web\UrlManager
     public function setUpLanguageUrls()
     {
         if ($this->cache instanceof Cache) {
-            $cacheKey = __CLASS__; // this class
-            $hash = md5(json_encode($this->languageRules));
+            $cacheKey = __CLASS__ . $this->cacheKeySuffix;
+            $hash = md5(json_encode($this->languageRules) . json_encode($this->languages));
             if (($data = $this->cache->get($cacheKey)) !== false && isset($data[1]) && $data[1] === $hash) {
                 $this->languageRules = $data[0];
             } else {
@@ -178,29 +171,12 @@ class UrlManager extends \yii\web\UrlManager
     protected function buildLanguageRules($rules)
     {
         $compiledRules = [];
-        $verbs = 'GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS';
         foreach ($rules as $key => $rule) {
             if (is_string($rule)) {
-                $rule = ['route' => $rule];
-                if (preg_match("/^((?:($verbs),)*($verbs))\\s+(.*)$/", $key, $matches)) {
-                    $rule['verb'] = explode(',', $matches[1]);
-                    // rules that do not apply for GET requests should not be use to create urls
-                    if (!in_array('GET', $rule['verb'], true)) {
-                        $rule['mode'] = UrlRule::PARSING_ONLY;
-                    }
-                    $key = $matches[4];
-                }
-                $rule['pattern'] = $key;
+                $rule = $this->createRuleFromString($rule, $key);
             }
             if (is_array($rule)) {
-                if (isset($rule['pattern']) &&
-                    !preg_match("/<{$this->languageParam}:?([^>]+)?>/", $rule['pattern']) &&
-                    strpos($rule['pattern'], '://') === false &&
-                    !(isset($rule['host']) && preg_match("/<{$this->languageParam}:?([^>]+)?>/", $rule['host']))
-                ) {
-                    $rule['pattern'] = "<{$this->languageParam}>/" . $rule['pattern'];
-                }
-                $rule = Yii::createObject(array_merge($this->ruleConfig, $rule));
+                $rule = $this->createRuleFromArray($rule);
             }
             $compiledRules[] = $rule;
         }
@@ -234,17 +210,10 @@ class UrlManager extends \yii\web\UrlManager
 
     /**
      * @param $code
-     *
-     * @return bool
      */
     public function setCurrent($code)
     {
-        if (!isset($this->languages[$code])) {
-            return false;
-        }
         $this->current = $code;
-
-        return true;
     }
 
     /**
@@ -277,16 +246,8 @@ class UrlManager extends \yii\web\UrlManager
      */
     public function parseRequest($request)
     {
-        $pathInfo = trim($request->pathInfo, '/');
-        if ($this->showDefault && empty($pathInfo)) {
-            if ($this->showScriptName) {
-                $before = $this->getScriptUrl() . '/';
-            } else {
-                $before = $this->getBaseUrl() . '/';
-            }
-
-            $url = $before . $this->defaultLanguage;
-
+        $url = $this->checkRedirectToLanguage($request);
+        if ($url) {
             Yii::$app->response->redirect($url);
             return [$url, []];
         }
@@ -298,9 +259,8 @@ class UrlManager extends \yii\web\UrlManager
         }
 
         if (isset($request[1][$this->languageParam])) {
-            if (!$this->setCurrent($request[1][$this->languageParam])) {
-                throw new NotFoundHttpException(\Yii::t('app', 'Selected language not supported.'));
-            } elseif (!$this->showDefault && $this->isCurrentDefault()) {
+            $this->setCurrent($request[1][$this->languageParam]);
+            if (!$this->showDefault && $this->isCurrentDefault()) {
                 throw new NotFoundHttpException(\Yii::t('app', 'You select default language. Remove it from URL.'));
             }
         }
@@ -308,5 +268,97 @@ class UrlManager extends \yii\web\UrlManager
         \Yii::$app->language = $this->getCurrentLocale();
 
         return $request;
+    }
+
+    public function fillLanguages()
+    {
+        if ($this->languages instanceof \Closure) {
+            $this->languages = call_user_func($this->languages);
+        }
+
+        if ($this->defaultLanguage instanceof \Closure) {
+            $this->defaultLanguage = call_user_func($this->defaultLanguage);
+        }
+    }
+
+    public function normalizeLanguages()
+    {
+        $languages = [];
+        foreach ($this->languages as $key => $value) {
+            if (is_string($key)) {
+                $languages[$key] = $value;
+            } else {
+                $languages[$value] = $value;
+            }
+        }
+        $this->languages = $languages;
+    }
+
+    /**
+     * @param $rule
+     * @param $key
+     *
+     * @return array
+     */
+    protected function createRuleFromString($rule, $key)
+    {
+        $verbs = 'GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS';
+
+        $rule = ['route' => $rule];
+        if (preg_match("/^((?:($verbs),)*($verbs))\\s+(.*)$/", $key, $matches)) {
+            $rule['verb'] = explode(',', $matches[1]);
+            // rules that do not apply for GET requests should not be use to create urls
+            if (!in_array('GET', $rule['verb'], true)) {
+                $rule['mode'] = UrlRule::PARSING_ONLY;
+            }
+            $key = $matches[4];
+        }
+        $rule['pattern'] = $key;
+
+        return $rule;
+    }
+
+    /**
+     * @param $rule
+     *
+     * @return object
+     * @throws InvalidConfigException
+     */
+    protected function createRuleFromArray($rule)
+    {
+        $languages = implode('|', array_keys($this->languages));
+
+        if (isset($rule['pattern']) &&
+            !preg_match("/<{$this->languageParam}:?([^>]+)?>/", $rule['pattern']) &&
+            strpos($rule['pattern'], '://') === false &&
+            !(isset($rule['host']) && preg_match("/<{$this->languageParam}:?([^>]+)?>/", $rule['host']))
+        ) {
+            $rule['pattern'] = "<{$this->languageParam}:({$languages})>/" . $rule['pattern'];
+        }
+        $rule = Yii::createObject(array_merge($this->ruleConfig, $rule));
+
+        return $rule;
+    }
+
+    /**
+     * @param $request
+     *
+     * @return array
+     */
+    public function checkRedirectToLanguage($request)
+    {
+        $pathInfo = trim($request->pathInfo, '/');
+        if ($this->showDefault && empty($pathInfo)) {
+            if ($this->showScriptName) {
+                $before = $this->getScriptUrl() . '/';
+            } else {
+                $before = $this->getBaseUrl() . '/';
+            }
+
+            $url = $before . $this->defaultLanguage;
+
+            return $url;
+        }
+        return false;
     }
 }

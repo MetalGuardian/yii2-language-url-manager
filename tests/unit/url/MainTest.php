@@ -125,6 +125,19 @@ class MainTest extends TestCase
         ]);
         $url = $manager->createUrl(['post/view', 'id' => 1, 'title' => 'sample post']);
         $this->assertEquals('/en/post/view?id=1&title=sample+post', $url);
+
+        $manager = new UrlManager([
+            'showScriptName' => false,
+            'cache' => 'realCache',
+            'showDefault' => true,
+            'languages' => ['ua' => 'uk', 'en', 'ru', 'it'],
+            'defaultLanguage' => 'it',
+            'rules' => [
+                'post/view' => 'post/view',
+            ],
+        ]);
+        $url = $manager->createUrl(['post/view', 'id' => 1, 'title' => 'sample post']);
+        $this->assertEquals('/it/post/view?id=1&title=sample+post', $url);
     }
 
     public function testCreateUrlWithVerbs()
@@ -242,8 +255,6 @@ class MainTest extends TestCase
 
     public function testWrongLanguageParsing()
     {
-        $this->setExpectedException('\yii\web\NotFoundHttpException', 'Selected language not supported.');
-
         $request = new Request();
 
         $manager = new UrlManager([
@@ -251,12 +262,14 @@ class MainTest extends TestCase
             'showDefault' => true,
             'languages' => ['ua' => 'uk', 'en', 'ru'],
             'defaultLanguage' => 'en',
+            'enableStrictParsing' => true,
             'rules' => [
                 '' => 'site/index'
             ],
         ]);
         $request->pathInfo = '/it';
-        $manager->parseRequest($request);
+        $request = $manager->parseRequest($request);
+        $this->assertEquals(false, $request);
     }
 
     public function testDefaultLanguageParsing()
