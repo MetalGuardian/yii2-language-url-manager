@@ -500,6 +500,8 @@ class MainTest extends TestCase
         ]);
         $url = $manager->createUrl(['post/view', 'id' => 1, 'title' => 'sample post']);
         $this->assertEquals('/post/view?id=1&title=sample+post', $url);
+        $url = $manager->createUrl(['post/view', 'id' => 1, 'language' => 'ru']);
+        $this->assertEquals('/ru/post/view?id=1&title=sample+post', $url);
 
         $manager = new UrlManager([
             'baseUrl' => '/test/',
