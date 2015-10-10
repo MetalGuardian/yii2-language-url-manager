@@ -391,6 +391,33 @@ class MainTest extends TestCase
         $this->assertEquals('http://ru.example.com/test/post/1/sample+post', $url);
         $url = $manager->createUrl(['post/index', 'page' => 1]);
         $this->assertEquals('/test/post/index?page=1&language=ru', $url);
+
+        // create url to other language with default false
+        $manager = new UrlManager([
+            'showDefault' => false,
+            'showScriptName' => false,
+            'cache' => null,
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
+            'rules' => [
+                'post' => 'post/view',
+            ],
+        ]);
+        $url = $manager->createUrl(['post/view', 'id' => 1, 'language' => 'ru']);
+        $this->assertEquals('/ru/post?id=1', $url);
+
+        // create url to default language
+        $manager = new UrlManager([
+            'showDefault' => false,
+            'showScriptName' => false,
+            'cache' => null,
+            'defaultLanguage' => 'ru',
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
+            'rules' => [
+                'post' => 'post/view',
+            ],
+        ]);
+        $url = $manager->createUrl(['post/view', 'id' => 1, 'language' => 'ru']);
+        $this->assertEquals('/post?id=1', $url);
     }
 
     public function testParseLanguageRequest()
@@ -500,8 +527,6 @@ class MainTest extends TestCase
         ]);
         $url = $manager->createUrl(['post/view', 'id' => 1, 'title' => 'sample post']);
         $this->assertEquals('/post/view?id=1&title=sample+post', $url);
-        $url = $manager->createUrl(['post/view', 'id' => 1, 'language' => 'ru']);
-        $this->assertEquals('/ru/post/view?id=1&title=sample+post', $url);
 
         $manager = new UrlManager([
             'baseUrl' => '/test/',
