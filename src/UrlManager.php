@@ -201,7 +201,7 @@ class UrlManager extends \yii\web\UrlManager
             $params[$this->languageParam] = $this->getCurrent();
         }
 
-        if ($params[$this->languageParam] === false || (!$this->showDefault && $this->isCurrentDefault())) {
+        if ($params[$this->languageParam] === false || (!$this->showDefault && $this->defaultLanguage == $params[$this->languageParam])) {
             unset($params[$this->languageParam]);
         }
 
