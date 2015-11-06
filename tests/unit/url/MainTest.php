@@ -225,6 +225,33 @@ class MainTest extends TestCase
         $request->pathInfo = '';
         $result = $manager->parseRequest($request);
         $this->assertEquals(['/en', []], $result);
+
+        $manager = new UrlManager([
+            'cache' => null,
+            'baseUrl' => '/test/',
+            'defaultLanguageBaseDomain' => false,
+            'showScriptName' => true,
+            'scriptUrl' => '/test/index.php',
+            'showDefault' => true,
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
+            'defaultLanguage' => 'en',
+            'rules' => ['' => 'site/index'],
+        ]);
+        $request->pathInfo = '';
+        $result = $manager->parseRequest($request);
+        $this->assertEquals(['', []], $result);
+
+        $manager = new UrlManager([
+            'cache' => null,
+            'showScriptName' => false,
+            'defaultLanguageBaseDomain' => false,
+            'showDefault' => true,
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
+            'rules' => ['' => 'site/index'],
+        ]);
+        $request->pathInfo = '';
+        $result = $manager->parseRequest($request);
+        $this->assertEquals(['', []], $result);
     }
 
     public function testLanguageParsing()
@@ -512,6 +539,26 @@ class MainTest extends TestCase
         $request->pathInfo = 'site/index.html';
         $result = $manager->parseRequest($request);
         $this->assertFalse($result);
+
+        // defaultLanguageBaseDomain = false
+        $manager = new UrlManager([
+            'cache' => null,
+            'defaultLanguageBaseDomain' => false,
+            'rules' => [
+                [
+                    'pattern' => 'post/<id>/<title>',
+                    'route' => 'post/view',
+                ],
+                '<module>/<controller>/<action>' => '<module>/<controller>/<action>',
+                '<controller>/<action>' => '<controller>/<action>',
+            ],
+            'showDefault' => true,
+            'languages' => ['ua' => 'uk', 'en', 'ru'],
+        ]);
+        // empty pathinfo
+        $request->pathInfo = '';
+        $result = $manager->parseRequest($request);
+        $this->assertEquals(['', []], $result);
     }
 
     /** Yii2 tests url manager - updated */

@@ -78,6 +78,14 @@ class UrlManager extends \yii\web\UrlManager
     public $showDefault = false;
 
     /**
+     * Redirect to the default language when `showDefault` is true when you go to the domain. Example:
+     * www.example.com -> www.example.com/en
+     *
+     * @var bool
+     */
+    public $defaultLanguageBaseDomain = true;
+
+    /**
      * Auto generate language rules
      *
      * @var bool
@@ -192,6 +200,7 @@ class UrlManager extends \yii\web\UrlManager
         $params = (array)$params;
 
         $route = trim($params[0], '/');
+
         $routeArray = explode('/', $route);
         if (isset($routeArray[0]) && in_array($routeArray[0], $this->exclude, true)) {
             return parent::createUrl($params);
@@ -348,7 +357,7 @@ class UrlManager extends \yii\web\UrlManager
     public function checkRedirectToLanguage($request)
     {
         $pathInfo = trim($request->pathInfo, '/');
-        if ($this->showDefault && empty($pathInfo)) {
+        if ($this->showDefault && $this->defaultLanguageBaseDomain && empty($pathInfo)) {
             if ($this->showScriptName) {
                 $before = $this->getScriptUrl() . '/';
             } else {
